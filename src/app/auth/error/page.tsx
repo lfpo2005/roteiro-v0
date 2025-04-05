@@ -21,15 +21,40 @@ function LoadingState() {
 // Componente interno que usa searchParams
 function AuthErrorContent() {
     const [errorMessage, setErrorMessage] = useState<string>('');
+    const [debugInfo, setDebugInfo] = useState<any>(null);
     const searchParams = useSearchParams();
     const error = searchParams.get('error');
 
     useEffect(() => {
         if (error) {
-            logger.error('Erro de autenticação', 'auth', { errorType: error });
+            // Registra o erro nos logs
+            logger.error('Erro de autenticação', 'auth', {
+                errorType: error,
+                url: window.location.href,
+                time: new Date().toISOString(),
+                referrer: document.referrer
+            });
+
             setErrorMessage(getErrorMessage(error));
+
+            // Gerar informações de debug para ajudar na resolução do problema
+            const debug = {
+                error,
+                url: window.location.href,
+                callbackUrl: searchParams.get('callbackUrl'),
+                host: window.location.host,
+                protocol: window.location.protocol,
+                origin: window.location.origin,
+                path: window.location.pathname,
+                search: window.location.search,
+                referrer: document.referrer,
+                userAgent: navigator.userAgent,
+                time: new Date().toISOString()
+            };
+
+            setDebugInfo(debug);
         }
-    }, [error]);
+    }, [error, searchParams]);
 
     const getErrorMessage = (errorType: string): string => {
         switch (errorType) {
@@ -55,6 +80,8 @@ function AuthErrorContent() {
                 return 'As credenciais fornecidas estão incorretas.';
             case 'SessionRequired':
                 return 'É necessário fazer login para acessar esta página.';
+            case 'redirect_uri_mismatch':
+                return 'O URI de redirecionamento não corresponde ao registro no Google Cloud. Verifique a configuração OAuth.';
             default:
                 return 'Ocorreu um erro durante a autenticação. Tente novamente.';
         }
@@ -81,6 +108,25 @@ function AuthErrorContent() {
                     <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md text-red-600 dark:text-red-400">
                         <p>{errorMessage || 'Ocorreu um erro durante o processo de autenticação.'}</p>
                     </div>
+
+                    {error === 'redirect_uri_mismatch' && (
+                        <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-md text-yellow-700 dark:text-yellow-400 text-sm">
+                            <p className="font-semibold">Erro de URI de redirecionamento</p>
+                            <p className="mt-2">Para o desenvolvedor: verifique se o URI de redirecionamento no Google Cloud Console inclui:</p>
+                            <code className="block mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs break-all">
+                                {window.location.origin}/api/auth/callback/google
+                            </code>
+                        </div>
+                    )}
+
+                    {process.env.NODE_ENV === 'development' && debugInfo && (
+                        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 text-xs overflow-auto">
+                            <p className="font-semibold mb-2">Informações de Debug:</p>
+                            <pre className="whitespace-pre-wrap break-all">
+                                {JSON.stringify(debugInfo, null, 2)}
+                            </pre>
+                        </div>
+                    )}
 
                     <div className="mt-8 space-y-4">
                         <Link
