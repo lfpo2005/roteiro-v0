@@ -6,7 +6,7 @@ import { UserSettings } from '@/types/user';
 /**
  * API para obter as configurações do usuário
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         // Verificar autenticação
         const session = await getServerSession();

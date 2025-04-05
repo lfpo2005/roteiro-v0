@@ -3,7 +3,6 @@
 import { ReactNode, MouseEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserType } from '@/types/user';
-import { useRouter } from 'next/navigation';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -23,7 +22,6 @@ export default function AuthGuard({
   className,
 }: AuthGuardProps) {
   const { isAuthenticated, checkUserAccess, login } = useAuth();
-  const router = useRouter();
 
   const handleClick = (e: MouseEvent<HTMLDivElement>) => {
     // Impede a propagação do evento para não acionar o evento original

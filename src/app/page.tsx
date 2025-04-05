@@ -1,7 +1,6 @@
 'use client';
 
 import Image from "next/image";
-import Link from "next/link";
 import ProtectedButton from "@/components/ProtectedButton";
 import { UserType } from "@/types/user";
 import Navbar from "@/components/Navbar";

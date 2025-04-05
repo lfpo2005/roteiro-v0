@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { User, UserType } from '@/types/user';
@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   // Função para buscar os dados completos do usuário
-  const fetchUserData = async (email: string) => {
+  const fetchUserData = useCallback(async (email: string) => {
     try {
       const response = await fetch(`/api/user/profile?email=${encodeURIComponent(email)}`);
       if (response.ok) {
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Erro ao buscar dados do usuário:', error);
       return null;
     }
-  };
+  }, [router]);
 
   // Função para atualizar os dados do usuário (pode ser chamada após atualizações)
   const refreshUserData = async () => {
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setFirstLogin(isFirstLogin(currentUser));
       setIsLoading(false);
     }
-  }, [session, status, router]);
+  }, [session, status, router, fetchUserData]);
 
   const checkUserAccess = (requiredTypes: UserType[]): boolean => {
     if (!user) return false;

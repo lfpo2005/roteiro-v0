@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { canUseResource } from '@/services/userUsageService';
 import { UserType } from '@/types/user';
@@ -14,7 +14,7 @@ export async function checkResourceAccess(
   try {
     // Obter o token do usuário
     const token = await getToken({ req });
-    
+
     if (!token || !token.id) {
       return {
         allowed: false,
@@ -22,13 +22,13 @@ export async function checkResourceAccess(
         status: 401
       };
     }
-    
+
     const userId = token.id as string;
     const userType = (token.userType as UserType) || UserType.BASIC;
-    
+
     // Verificar se o usuário pode usar o recurso
     const canUse = await canUseResource(userId, userType, resourceType);
-    
+
     if (!canUse) {
       return {
         allowed: false,
@@ -36,7 +36,7 @@ export async function checkResourceAccess(
         status: 403
       };
     }
-    
+
     return {
       allowed: true,
       message: 'Acesso permitido',
@@ -63,7 +63,7 @@ export async function checkScriptLength(
   try {
     // Obter o token do usuário
     const token = await getToken({ req });
-    
+
     if (!token || !token.id) {
       return {
         allowed: false,
@@ -71,12 +71,12 @@ export async function checkScriptLength(
         status: 401
       };
     }
-    
+
     const userType = (token.userType as UserType) || UserType.BASIC;
-    
+
     // Obter os limites do usuário
     const limits = getUserLimits(userType);
-    
+
     // Verificar se o conteúdo excede o tamanho máximo
     if (scriptContent.length > limits.maxScriptLength) {
       return {
@@ -85,7 +85,7 @@ export async function checkScriptLength(
         status: 413 // Payload Too Large
       };
     }
-    
+
     return {
       allowed: true,
       message: 'Tamanho do roteiro dentro do limite',

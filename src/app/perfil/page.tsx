@@ -6,16 +6,16 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function PerfilPage() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
-  
+
   // Redirecionar para a página de login se não estiver autenticado
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/signin');
     }
   }, [isLoading, isAuthenticated, router]);
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -26,11 +26,11 @@ export default function PerfilPage() {
       </div>
     );
   }
-  
+
   if (!isAuthenticated) {
     return null; // Não renderiza nada, pois o useEffect vai redirecionar
   }
-  
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,7 +42,7 @@ export default function PerfilPage() {
             Complete seu cadastro para aproveitar todos os recursos da plataforma
           </p>
         </div>
-        
+
         <ProfileForm />
       </div>
     </div>

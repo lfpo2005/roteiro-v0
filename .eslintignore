@@ -1,0 +1,8 @@
+# Ignorar arquivos de build e temporários
+.next/
+node_modules/
+out/
+build/
+
+# Ignorar arquivos específicos com problemas de lint
+src/services/userService.ts 

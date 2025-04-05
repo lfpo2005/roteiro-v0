@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { UserType } from '@/types/user';
-import { getUserByEmail, upsertUser } from '@/services/userService';
+import { upsertUser } from '@/services/userService';
 
 const handler = NextAuth({
   providers: [
@@ -20,7 +20,7 @@ const handler = NextAuth({
             name: token.name ?? undefined,
             image: token.picture ?? undefined,
           });
-          
+
           token.id = user.id;
           token.userType = user.userType as UserType;
         } catch (error) {

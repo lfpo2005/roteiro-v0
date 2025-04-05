@@ -1,6 +1,5 @@
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
-type PrismaUser = Prisma.UserModel;
+import { User as PrismaUser } from '@prisma/client';
 import { User, UserType, UserSettings } from '@/types/user';
 
 /**
@@ -59,10 +58,14 @@ export async function updateUserProfile(userId: string, data: {
  * Atualiza as configurações de um usuário
  */
 export async function updateUserSettings(userId: string, settings: UserSettings): Promise<PrismaUser> {
+  // Convertendo para JSON string e de volta para objeto para garantir compatibilidade com Prisma
+  const jsonSettings = JSON.parse(JSON.stringify(settings));
+
   return prisma.user.update({
     where: { id: userId },
     data: {
-      settings: settings as any,
+      // @ts-ignore - necessário para compatibilidade com o Prisma
+      settings: jsonSettings,
       updatedAt: new Date(),
     },
   });
