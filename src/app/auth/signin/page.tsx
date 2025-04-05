@@ -26,8 +26,8 @@ function SignInContent() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
-  const errorType = searchParams.get('error');
+  const callbackUrl = searchParams?.get('callbackUrl') || '/';
+  const errorType = searchParams?.get('error');
 
   useEffect(() => {
     // Verificar erros na URL
@@ -37,11 +37,11 @@ function SignInContent() {
     }
 
     // Redirecionar se já autenticado
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && session) {
       logger.info('Usuário já autenticado, redirecionando', 'auth');
       router.push(callbackUrl);
     }
-  }, [errorType, status, router, callbackUrl]);
+  }, [errorType, status, router, callbackUrl, session]);
 
   const getErrorMessage = (errorType: string): string => {
     switch (errorType) {
@@ -147,7 +147,7 @@ function SignInContent() {
   );
 }
 
-// Componente principal que envolve o conteúdo com Suspense
+// Componente principal
 export default function SignIn() {
   return (
     <Suspense fallback={<LoadingState />}>

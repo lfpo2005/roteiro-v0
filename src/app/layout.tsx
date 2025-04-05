@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import type { Metadata } from "next";
 import { Providers } from "./providers";
 import { Analytics } from '@vercel/analytics/react';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { setupVercelProductionLogs, setupUncaughtErrorLogger } from '@/lib/vercel-logger';
 
@@ -37,13 +36,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <Providers>
-            {children}
-          </Providers>
+        <Providers>
+          {children}
           <Analytics />
           <SpeedInsights />
-        </AuthProvider>
+        </Providers>
 
         {/* Script para configurar o logger de erros não capturados */}
         <script

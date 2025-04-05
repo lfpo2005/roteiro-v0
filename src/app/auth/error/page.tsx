@@ -22,10 +22,14 @@ function LoadingState() {
 function AuthErrorContent() {
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [debugInfo, setDebugInfo] = useState<any>(null);
+    const [windowOrigin, setWindowOrigin] = useState<string>('');
     const searchParams = useSearchParams();
-    const error = searchParams.get('error');
+    const error = searchParams?.get('error');
 
     useEffect(() => {
+        // Definindo origin apenas no cliente
+        setWindowOrigin(window.location.origin);
+
         if (error) {
             // Registra o erro nos logs
             logger.error('Erro de autenticação', 'auth', {
@@ -41,7 +45,7 @@ function AuthErrorContent() {
             const debug = {
                 error,
                 url: window.location.href,
-                callbackUrl: searchParams.get('callbackUrl'),
+                callbackUrl: searchParams?.get('callbackUrl'),
                 host: window.location.host,
                 protocol: window.location.protocol,
                 origin: window.location.origin,
@@ -114,7 +118,7 @@ function AuthErrorContent() {
                             <p className="font-semibold">Erro de URI de redirecionamento</p>
                             <p className="mt-2">Para o desenvolvedor: verifique se o URI de redirecionamento no Google Cloud Console inclui:</p>
                             <code className="block mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs break-all">
-                                {window.location.origin}/api/auth/callback/google
+                                {windowOrigin}/api/auth/callback/google
                             </code>
                         </div>
                     )}
