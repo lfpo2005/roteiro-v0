@@ -39,15 +39,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Se não tem email, não faz requisição
       if (!email) {
         logger.warning('Nenhum email fornecido para buscar perfil', 'auth');
+        setUser(null);
         return null;
       }
 
       logger.info('Buscando dados do usuário', 'auth', { email });
-      const response = await fetch(`/api/user/profile?email=${encodeURIComponent(email)}`);
+      const response = await fetch(`/api/user/profile`);
 
       // Se a resposta for 401, o usuário não está autenticado
       if (response.status === 401) {
         logger.warning('Usuário não autenticado ao buscar perfil', 'auth', { email });
+        setUser(null);
         return null;
       }
 
@@ -57,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           statusText: response.statusText,
           email
         });
+        setUser(null);
         return null;
       }
 
@@ -84,23 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return userData;
     } catch (error) {
       logger.error('Erro ao buscar dados do usuário', 'auth', { error, email });
-
-      // Em desenvolvimento, tentar novamente sem especificar email (para pegar o mock)
-      if (process.env.NODE_ENV !== 'production') {
-        try {
-          logger.info('Tentando buscar usuário mock', 'auth');
-          const response = await fetch('/api/user/profile');
-          if (response.ok) {
-            const mockUser = await response.json();
-            logger.info('Usuário mock recebido', 'auth');
-            setUser(mockUser);
-            return mockUser;
-          }
-        } catch (mockError) {
-          logger.error('Erro ao buscar usuário mock', 'auth', { error: mockError });
-        }
-      }
-
+      setUser(null);
       return null;
     }
   }, [router]);
@@ -110,14 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session?.user?.email) {
       logger.info('Atualizando dados do usuário', 'auth', { email: session.user.email });
       return await fetchUserData(session.user.email);
-    } else if (process.env.NODE_ENV !== 'production') {
-      // Em desenvolvimento, tentar buscar o usuário mock mesmo sem sessão
-      try {
-        return await fetchUserData('desenvolvimento@teste.com');
-      } catch (error) {
-        logger.error('Erro ao buscar usuário mock em refreshUserData', 'auth', { error });
-        return null;
-      }
     }
     return null;
   };
@@ -172,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = () => {
     logger.info('Iniciando fluxo de login', 'auth');
-    signIn('google', { callbackUrl: '/auth/signin' });
+    signIn('google', { callbackUrl: '/' });
   };
 
   const logout = () => {

@@ -23,10 +23,12 @@ const MOCK_USER: User = {
 /**
  * API para buscar o perfil do usuário
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
+    // Verificar autenticação
     const session = await getServerSession(authOptions);
 
+    // Se não estiver autenticado, retorna erro
     if (!session?.user?.email) {
       logger.warning('Tentativa de acesso não autorizado', 'profileAPI');
       return NextResponse.json(
@@ -36,6 +38,8 @@ export async function GET(request: NextRequest) {
     }
 
     logger.info('Buscando perfil do usuário', 'profileAPI', { email: session.user.email });
+
+    // Buscar usuário pelo email da sessão
     const user = await getUserByEmail(session.user.email);
 
     if (!user) {
@@ -47,6 +51,8 @@ export async function GET(request: NextRequest) {
     }
 
     logger.info('Perfil encontrado com sucesso', 'profileAPI', { userId: user.id });
+
+    // Retornar dados do usuário
     return NextResponse.json(user);
   } catch (error) {
     logger.error('Erro ao buscar perfil', 'profileAPI', { error });

@@ -4,35 +4,72 @@ import { signIn, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { logger } from '@/lib/logger';
 
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
   const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const errorType = searchParams.get('error');
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/');
+    // Verificar erros na URL
+    if (errorType) {
+      setError(getErrorMessage(errorType));
+      logger.error('Erro na autenticação', 'auth', { errorType });
     }
-  }, [status, router]);
+
+    // Redirecionar se já autenticado
+    if (status === 'authenticated') {
+      logger.info('Usuário já autenticado, redirecionando', 'auth');
+      router.push(callbackUrl);
+    }
+  }, [errorType, status, router, callbackUrl]);
+
+  const getErrorMessage = (errorType: string): string => {
+    switch (errorType) {
+      case 'OAuthSignin':
+        return 'Erro ao iniciar a autenticação com o Google.';
+      case 'OAuthCallback':
+        return 'Erro ao processar o retorno da autenticação.';
+      case 'OAuthCreateAccount':
+        return 'Não foi possível criar a conta com o Google.';
+      case 'EmailCreateAccount':
+        return 'Não foi possível criar a conta com o email.';
+      case 'Callback':
+        return 'Erro durante o processo de callback.';
+      case 'OAuthAccountNotLinked':
+        return 'Este email já está associado a outra conta.';
+      case 'AccessDenied':
+        return 'Acesso negado. Você não tem permissão para acessar este recurso.';
+      default:
+        return 'Ocorreu um erro na autenticação. Tente novamente.';
+    }
+  };
 
   const handleSignIn = async () => {
     try {
       setIsLoading(true);
-      await signIn('google', { callbackUrl: '/' });
+      setError('');
+      logger.info('Iniciando autenticação com Google', 'auth');
+      await signIn('google', { callbackUrl });
     } catch (error) {
-      console.error('Erro ao fazer login:', error);
+      logger.error('Erro ao fazer login com Google', 'auth', { error });
+      setError('Ocorreu um erro ao tentar fazer login. Tente novamente.');
       setIsLoading(false);
     }
   };
 
-  if (status === 'loading' || status === 'authenticated') {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
+          <p className="mt-4 text-gray-600">Verificando autenticação...</p>
         </div>
       </div>
     );
@@ -59,6 +96,12 @@ export default function SignIn() {
             Faça login para acessar todos os recursos
           </p>
         </div>
+
+        {error && (
+          <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md text-red-600 dark:text-red-400 text-sm">
+            {error}
+          </div>
+        )}
 
         <div className="mt-8">
           <button

@@ -20,8 +20,14 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async signIn({ user, account, profile }) {
+            // Verificar se temos as informações necessárias
+            if (!user || !user.email) {
+                logger.error('Falha no login: usuário ou email ausente', 'auth');
+                return false;
+            }
+
             // Se o login foi bem-sucedido e temos informações do usuário
-            if (user && user.email && account?.provider === 'google') {
+            if (user.email && account?.provider === 'google') {
                 try {
                     // Cria ou atualiza o usuário no banco de dados
                     const dbUser = await upsertUser({
@@ -66,6 +72,11 @@ export const authOptions: NextAuthOptions = {
         async createUser(message) {
             // Quando um usuário é criado, define os valores padrão
             const { id, email } = message.user;
+            if (!id || !email) {
+                logger.error('Dados de usuário inválidos no evento createUser', 'auth');
+                return;
+            }
+
             try {
                 await prisma.user.update({
                     where: { id },
