@@ -3,11 +3,24 @@
 import { signIn, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { logger } from '@/lib/logger';
 
-export default function SignIn() {
+// Componente para o loading state
+function LoadingState() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Verificando autenticação...</p>
+      </div>
+    </div>
+  );
+}
+
+// Componente interno que usa searchParams
+function SignInContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -65,14 +78,7 @@ export default function SignIn() {
   };
 
   if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Verificando autenticação...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
@@ -138,5 +144,14 @@ export default function SignIn() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Componente principal que envolve o conteúdo com Suspense
+export default function SignIn() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <SignInContent />
+    </Suspense>
   );
 }
