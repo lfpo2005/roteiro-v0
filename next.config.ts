@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     // Ignorar erros de tipagem durante o build
     ignoreBuildErrors: true,
   },
+  images: {
+    domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com', 'placehold.co'],
+  },
 };
 
 export default nextConfig;

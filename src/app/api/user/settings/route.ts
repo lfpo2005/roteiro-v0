@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getUserByEmail, updateUserSettings, getUserSettings } from '@/services/userService';
+import { authOptions } from '@/lib/auth';
+import { getUserByEmail, updateUserSettings, getUserSettings, validateUserSettings } from '@/services/userService';
 import { UserSettings } from '@/types/user';
 
 /**
@@ -8,26 +9,19 @@ import { UserSettings } from '@/types/user';
  */
 export async function GET() {
     try {
-        // Verificar autenticação
-        const session = await getServerSession();
-        if (!session?.user?.email) {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
             return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
         }
 
-        // Buscar usuário pelo email
-        const user = await getUserByEmail(session.user.email);
-        if (!user) {
-            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
-        }
-
-        // Obter configurações do usuário
-        const settings = await getUserSettings(user.id);
-
-        // Retornar as configurações
+        const settings = await getUserSettings(session.user.id);
         return NextResponse.json(settings);
     } catch (error) {
         console.error('Erro ao buscar configurações:', error);
-        return NextResponse.json({ error: 'Erro ao processar requisição' }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Erro ao buscar configurações do usuário' },
+            { status: 500 }
+        );
     }
 }
 
@@ -36,39 +30,21 @@ export async function GET() {
  */
 export async function PUT(request: NextRequest) {
     try {
-        // Verificar autenticação
-        const session = await getServerSession();
-        if (!session?.user?.email) {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
             return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
         }
 
-        // Obter dados do corpo da requisição
-        const data = await request.json();
+        const body = await request.json();
+        const settings = validateUserSettings(body as Partial<UserSettings>);
 
-        // Validar as configurações recebidas
-        const settings: UserSettings = {
-            emailNotificacoes: Boolean(data.emailNotificacoes),
-            novosRecursos: Boolean(data.novosRecursos),
-            dicas: Boolean(data.dicas),
-            temaEscuro: Boolean(data.temaEscuro),
-        };
-
-        // Buscar usuário pelo email
-        const user = await getUserByEmail(session.user.email);
-        if (!user) {
-            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
-        }
-
-        // Atualizar configurações do usuário
-        await updateUserSettings(user.id, settings);
-
-        // Retornar as configurações atualizadas
-        return NextResponse.json({
-            message: 'Configurações atualizadas com sucesso',
-            settings,
-        });
+        await updateUserSettings(session.user.id, settings);
+        return NextResponse.json(settings);
     } catch (error) {
         console.error('Erro ao atualizar configurações:', error);
-        return NextResponse.json({ error: 'Erro ao processar requisição' }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Erro ao atualizar configurações do usuário' },
+            { status: 500 }
+        );
     }
 } 

@@ -4,8 +4,17 @@ import Image from "next/image";
 import ProtectedButton from "@/components/ProtectedButton";
 import { UserType } from "@/types/user";
 import Navbar from "@/components/Navbar";
+import Link from "next/link";
+import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
+  const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    console.log("Home page - Auth state:", { isAuthenticated, user });
+  }, [isAuthenticated, user]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6 md:p-10">
       <header className="max-w-7xl mx-auto mb-12">
