@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="40" viewBox="0 0 180 40" fill="none">
+  <path d="M10 8C10 6.89543 10.8954 6 12 6H168C169.105 6 170 6.89543 170 8V32C170 33.1046 169.105 34 168 34H12C10.8954 34 10 33.1046 10 32V8Z" fill="#4F46E5" fill-opacity="0.1" stroke="#4F46E5" stroke-width="2"/>
+  <path d="M30 20C30 24.9706 25.9706 29 21 29C16.0294 29 12 24.9706 12 20C12 15.0294 16.0294 11 21 11C25.9706 11 30 15.0294 30 20Z" fill="#4F46E5"/>
+  <path d="M24 20L19.5 23.5L19.5 16.5L24 20Z" fill="white"/>
+  <text x="40" y="24" font-family="Arial" font-size="16" font-weight="bold" fill="#4F46E5">Roteiro YouTube</text>
+</svg>

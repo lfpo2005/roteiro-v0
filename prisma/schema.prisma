@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  userType      String    @default("basic") // basic, premium, admin
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Campos adicionais para cadastro de cliente
+  telefone      String?
+  endereco      String?
+  cidade        String?
+  estado        String?
+  cep           String?
+  documento     String?
+  dataNascimento DateTime?
+  
+  // Configurações de usuário
+  settings      Json?     @default("{\"emailNotificacoes\": true, \"novosRecursos\": true, \"dicas\": true, \"temaEscuro\": false}")
+
+  // Relações
+  usage         UserUsage[]
+
+  @@map("users")
+}
+
+// Modelo para armazenar o uso de recursos pelos usuários
+model UserUsage {
+  id          String   @id @default(cuid())
+  userId      String
+  scriptsUsed Int      @default(0)
+  titlesUsed  Int      @default(0)
+  imagesUsed  Int      @default(0)
+  audiosUsed  Int      @default(0)
+  month       Int      // Mês (1-12)
+  year        Int      // Ano
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  user        User     @relation(fields: [userId], references: [id])
+
+  // Índice composto para garantir um registro único por usuário/mês/ano
+  @@unique([userId, month, year], name: "userId_month_year")
+  @@map("user_usage")
+}
