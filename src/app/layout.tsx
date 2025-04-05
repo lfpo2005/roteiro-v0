@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
+import './globals.css';
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from "next";
 import { Providers } from "./providers";
 import { Analytics } from '@vercel/analytics/react';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { setupVercelProductionLogs, setupUncaughtErrorLogger } from '@/lib/vercel-logger';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,6 +22,11 @@ export const metadata: Metadata = {
   description: "Crie roteiros, títulos, imagens e áudio para seus vídeos do YouTube com facilidade e rapidez",
 };
 
+// Se estivermos em produção, configure o sistema de logs
+if (process.env.NODE_ENV === 'production') {
+  setupVercelProductionLogs();
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,10 +37,26 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          {children}
-        </Providers>
-        <Analytics />
+        <AuthProvider>
+          <Providers>
+            {children}
+          </Providers>
+          <Analytics />
+          <SpeedInsights />
+        </AuthProvider>
+
+        {/* Script para configurar o logger de erros não capturados */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                (${setupUncaughtErrorLogger.toString()})();
+              } catch (e) {
+                console.error("Erro ao configurar logger:", e);
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
