@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-export const runtime = 'nodejs' 
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
     const { readable, writable } = new TransformStream()
@@ -11,7 +11,6 @@ export async function POST(req: NextRequest) {
         const prompt = body?.messages?.at(-1)?.content || 'Sem prompt recebido.'
         const result = interpretarPrompt(prompt)
 
-        // envia no formato SSE
         await writer.write(
             new TextEncoder().encode(`data: ${JSON.stringify({ result })}\n\n`)
         )
@@ -34,10 +33,6 @@ export async function POST(req: NextRequest) {
 
 function interpretarPrompt(prompt: string): string {
     const lower = prompt.toLowerCase()
-
-    if (lower.includes('log')) {
-        return 'Simulação: Nenhum erro encontrado nos logs até o momento.'
-    }
-
-    return `Prompt recebido: "${prompt}"`
+    if (lower.includes('log')) return '🔍 Nenhum erro encontrado nos logs.'
+    return `📩 Prompt recebido: "${prompt}"`
 }
